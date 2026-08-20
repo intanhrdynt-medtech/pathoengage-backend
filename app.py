@@ -73,10 +73,25 @@ def user_dict(user):
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
 
+@app.route('/')
+def index():
+    return jsonify({
+        'status': 'success',
+        'message': 'PathoEngage API is running on Vercel!'
+    })
+
 @app.route('/health')
 def health():
     return jsonify({'status': 'ok', 'app': 'PathoEngage PPDS PA UNAIR'})
 
+@app.route('/seed')
+def run_seed():
+    import init_db
+    try:
+        init_db.seed()
+        return jsonify({'status': 'success', 'message': 'Database seeded successfully!'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
 
 @app.route('/register', methods=['POST'])
 def register():
