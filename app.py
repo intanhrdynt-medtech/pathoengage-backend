@@ -193,6 +193,7 @@ def update_competency(cid):
 def exam_dict(e):
     return {
         'id': e.id,
+        'phase_category': e.phase_category,
         'exam_name': e.exam_name,
         'exam_type': e.exam_type,
         'scheduled_date': e.scheduled_date.isoformat() if e.scheduled_date else None,

@@ -40,8 +40,9 @@ class Exam(db.Model):
     __tablename__ = 'exam'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    phase_category = db.Column(db.String(16), nullable=True)   # red, yellow, green
     exam_name = db.Column(db.String(200), nullable=False)      # e.g. "Ujian Lokal Organ Kepala & Leher"
-    exam_type = db.Column(db.String(100), nullable=False)      # Lokal, Nasional Tahap 1, Board/Tahap 2
+    exam_type = db.Column(db.String(100), nullable=False)      # Lokal, Nasional
     scheduled_date = db.Column(db.DateTime, nullable=True)
     result = db.Column(db.String(32), default='terjadwal')     # terjadwal, lulus, tidak_lulus
     score = db.Column(db.Float, nullable=True)

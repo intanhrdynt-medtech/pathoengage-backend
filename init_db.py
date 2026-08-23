@@ -83,21 +83,24 @@ def assign_standard_curriculum(user_id, is_seed=False):
 
     # ── Exams ─────────────────────────────────────────────────────────────
     exams = [
-        ('Ujian Lokal Tahap 1', 'Lokal Tahap 1', 'Syarat naik Kalung Kuning'),
-        ('Ujian Nasional Tahap 1', 'Nasional Tahap 1', 'Syarat: Wajib Lulus Ujian Lokal Tahap 1'),
-        ('Ujian Lokal Tahap 2', 'Lokal Tahap 2', 'Diikuti di akhir masa Kalung Hijau'),
-        ('Ujian Board / Nasional Tahap 2', 'Board/Tahap 2', 'Syarat: Lulus Ujian Lokal Tahap 2 & Punya LOA Publikasi Scopus'),
+        ('Ujian Organ I', 'Lokal', 'red', 'Syarat maju ke Ujian Lokal Tahap 1'),
+        ('Ujian Lokal Tahap 1', 'Lokal', 'red', 'Diikuti saat transisi Kalung Merah ke Kuning'),
+        ('Ujian Organ II', 'Lokal', 'yellow', 'Syarat maju ke Ujian Nasional Tahap 1 / Hijau'),
+        ('Ujian Nasional Tahap 1', 'Nasional', 'yellow', 'Syarat: Wajib Lulus Ujian Lokal Tahap 1'),
+        ('Ujian Lokal Tahap 2', 'Lokal', 'green', 'Diikuti di akhir masa Kalung Hijau'),
+        ('Ujian Nasional Tahap 2', 'Nasional', 'green', 'Syarat: Lulus Ujian Lokal Tahap 2 & Punya LOA Publikasi Scopus'),
     ]
-    for name, etype, notes in exams:
+    for name, etype, phase, notes in exams:
         result, score, sdate = 'terjadwal', None, None
         if is_seed:
-            if name == 'Ujian Lokal Tahap 1':
+            if name in ('Ujian Organ I', 'Ujian Lokal Tahap 1'):
                 result, score, sdate = 'lulus', 82.5, datetime(2025, 3, 15)
-            elif name == 'Ujian Nasional Tahap 1':
+            elif name == 'Ujian Organ II':
                 result, score, sdate = 'lulus', 78.0, datetime(2025, 6, 20)
 
         db.session.add(Exam(
             user_id=user_id,
+            phase_category=phase,
             exam_name=name,
             exam_type=etype,
             scheduled_date=sdate,
