@@ -29,7 +29,8 @@ class CompetencyLog(db.Model):
     phase_category = db.Column(db.String(16), nullable=False)  # red, yellow, green
     competency_name = db.Column(db.String(200), nullable=False)
     organ_system = db.Column(db.String(100), nullable=True)    # e.g. Kepala & Leher, Mammae
-    status = db.Column(db.String(32), default='not_started')   # not_started, in_progress, completed
+    status = db.Column(db.String(32), default='not_started')   # not_started, pending_verification, completed
+    evidence_url = db.Column(db.String(500), nullable=True)
     completed_at = db.Column(db.DateTime, nullable=True)
     notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

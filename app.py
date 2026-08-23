@@ -158,6 +158,7 @@ def comp_dict(c):
         'competency_name': c.competency_name,
         'organ_system': c.organ_system,
         'status': c.status,
+        'evidence_url': c.evidence_url,
         'notes': c.notes,
         'completed_at': c.completed_at.isoformat() if c.completed_at else None,
     }
@@ -179,6 +180,8 @@ def update_competency(cid):
     if 'status' in data:
         comp.status = data['status']
         comp.completed_at = datetime.datetime.utcnow() if comp.status == 'completed' else None
+    if 'evidence_url' in data:
+        comp.evidence_url = data['evidence_url']
     if 'notes' in data:
         comp.notes = data['notes']
     db.session.commit()
