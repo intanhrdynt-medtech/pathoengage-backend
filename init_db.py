@@ -83,18 +83,17 @@ def assign_standard_curriculum(user_id, is_seed=False):
 
     # ── Exams ─────────────────────────────────────────────────────────────
     exams = [
-        ('Ujian Organ Kepala & Leher', 'Lokal'),
-        ('Ujian Organ Paru', 'Lokal'),
-        ('Ujian Organ GIT', 'Lokal'),
-        ('Ujian Nasional Tahap 1', 'Nasional Tahap 1'),
-        ('Ujian Board / Sp.PA', 'Board/Tahap 2'),
+        ('Ujian Lokal Tahap 1', 'Lokal Tahap 1', 'Syarat naik Kalung Kuning'),
+        ('Ujian Nasional Tahap 1', 'Nasional Tahap 1', 'Syarat: Wajib Lulus Ujian Lokal Tahap 1'),
+        ('Ujian Lokal Tahap 2', 'Lokal Tahap 2', 'Diikuti di akhir masa Kalung Hijau'),
+        ('Ujian Board / Nasional Tahap 2', 'Board/Tahap 2', 'Syarat: Lulus Ujian Lokal Tahap 2 & Punya LOA Publikasi Scopus'),
     ]
-    for name, etype in exams:
+    for name, etype, notes in exams:
         result, score, sdate = 'terjadwal', None, None
         if is_seed:
-            if name == 'Ujian Organ Kepala & Leher':
+            if name == 'Ujian Lokal Tahap 1':
                 result, score, sdate = 'lulus', 82.5, datetime(2025, 3, 15)
-            elif name == 'Ujian Organ Paru':
+            elif name == 'Ujian Nasional Tahap 1':
                 result, score, sdate = 'lulus', 78.0, datetime(2025, 6, 20)
 
         db.session.add(Exam(
@@ -104,6 +103,7 @@ def assign_standard_curriculum(user_id, is_seed=False):
             scheduled_date=sdate,
             result=result,
             score=score,
+            notes=notes,
         ))
 
     # ── Academic Tasks ────────────────────────────────────────────────────
