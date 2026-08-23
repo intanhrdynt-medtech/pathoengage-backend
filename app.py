@@ -115,6 +115,12 @@ def register():
         nim=nim or '-',
     )
     db.session.add(user)
+    db.session.flush() # get user.id before assigning curriculum
+    
+    # Assign standard curriculum to the new user
+    import init_db
+    init_db.assign_standard_curriculum(user.id, is_seed=False)
+    
     db.session.commit()
     token = encode_token(user.id)
     return jsonify({'token': token, 'user': user_dict(user)})

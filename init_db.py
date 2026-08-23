@@ -8,6 +8,129 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime, timedelta
 
 
+def assign_standard_curriculum(user_id, is_seed=False):
+    # ── Competency Logs ───────────────────────────────────────────────────
+    competencies = [
+        ('red', 'Imunologi Dasar', 'Dasar PA'),
+        ('red', 'Biologi Molekuler & Genetika', 'Dasar PA'),
+        ('red', 'Patologi Kepala & Leher', 'Kepala & Leher'),
+        ('red', 'Patologi Paru', 'Paru'),
+        ('yellow', 'Teknik Sitologi & Potong Beku', 'Sitologi'),
+        ('yellow', 'Dasar Imunohistokimia (IHK)', 'IHK & Mol. Patologi'),
+        ('yellow', 'Patologi Molekuler Dasar', 'IHK & Mol. Patologi'),
+        ('yellow', 'Patologi Gastrointestinal', 'GIT'),
+        ('green', 'Patologi Payudara', 'Payudara'),
+        ('green', 'Patologi Ginjal & Urologi', 'Urologi'),
+        ('green', 'Patologi Sistem Saraf Pusat', 'Neuropatologi'),
+        ('green', 'Forensik Patologi', 'Forensik'),
+    ]
+    for phase, name, organ in competencies:
+        status = 'not_started'
+        if is_seed:
+            if name in ('Imunologi Dasar', 'Biologi Molekuler & Genetika'):
+                status = 'completed'
+            elif name == 'Patologi Kepala & Leher':
+                status = 'in_progress'
+
+        db.session.add(CompetencyLog(
+            user_id=user_id,
+            phase_category=phase,
+            competency_name=name,
+            organ_system=organ,
+            status=status,
+            completed_at=datetime.utcnow() if status == 'completed' else None,
+        ))
+
+    # ── Exams ─────────────────────────────────────────────────────────────
+    exams = [
+        ('Ujian Organ Kepala & Leher', 'Lokal'),
+        ('Ujian Organ Paru', 'Lokal'),
+        ('Ujian Organ GIT', 'Lokal'),
+        ('Ujian Nasional Tahap 1', 'Nasional Tahap 1'),
+        ('Ujian Board / Sp.PA', 'Board/Tahap 2'),
+    ]
+    for name, etype in exams:
+        result, score, sdate = 'terjadwal', None, None
+        if is_seed:
+            if name == 'Ujian Organ Kepala & Leher':
+                result, score, sdate = 'lulus', 82.5, datetime(2025, 3, 15)
+            elif name == 'Ujian Organ Paru':
+                result, score, sdate = 'lulus', 78.0, datetime(2025, 6, 20)
+
+        db.session.add(Exam(
+            user_id=user_id,
+            exam_name=name,
+            exam_type=etype,
+            scheduled_date=sdate,
+            result=result,
+            score=score,
+        ))
+
+    # ── Academic Tasks ────────────────────────────────────────────────────
+    now = datetime.utcnow()
+    tasks = [
+        ('Textbook Reading', 'Robbins & Cotran Pathologic Basis of Disease', 'Baca minimal 3 bab per bulan', 1),
+        ('Textbook Reading', 'Rosai and Ackerman\'s Surgical Pathology', 'Fokus pada bab organ yang sedang distase', 2),
+        ('Journal Reading', 'Modern Pathology — Breast Carcinoma Update', 'Presentasikan di journal reading department', 3),
+        ('Journal Reading', 'American Journal of Surgical Pathology', 'Review jurnal terbaru IHK', 4),
+        ('Penelitian', 'Proposal Karya Akhir (KA)', 'Penelitian tentang Imunohistokimia pada Kanker Payudara Triple Negative', 4),
+        ('Publikasi', 'Publikasi Jurnal Terindeks Scopus', 'Syarat kelulusan: minimal 1 artikel terindeks Scopus atau setara', 8),
+    ]
+    for ttype, title, desc, sem in tasks:
+        done = False
+        dl = None
+        if is_seed:
+            if sem in (1, 2):
+                done = True
+            elif sem == 3:
+                dl = now + timedelta(days=30)
+            elif sem == 4:
+                dl = now + timedelta(days=60)
+                if ttype == 'Penelitian':
+                    dl = now + timedelta(days=90)
+
+        db.session.add(AcademicTask(
+            user_id=user_id,
+            task_type=ttype,
+            title=title,
+            description=desc,
+            target_semester=sem,
+            deadline=dl,
+            is_completed=done,
+        ))
+
+    # ── External Rotations ────────────────────────────────────────────────
+    rotations = [
+        ('RS Universitas Airlangga (RSUA)', 'Departemen Patologi Anatomi', 'Surabaya', 'Prof. Dr. Soemarsono, Sp.PA(K)'),
+        ('RSUD Dr. Soetomo', 'Patologi Anatomi', 'Surabaya', 'Dr. Ratna Kusuma, Sp.PA'),
+        ('RSPAL Dr. Ramelan', 'Lab Patologi', 'Surabaya', 'Dr. Adi Purnomo, Sp.PA'),
+        ('RSUD Haji Surabaya', 'Patologi Anatomi', 'Surabaya', None),
+    ]
+    for hname, dept, city, sup in rotations:
+        status = 'terjadwal'
+        sdate, edate = None, None
+        if is_seed:
+            if hname == 'RS Universitas Airlangga (RSUA)':
+                status, sdate, edate = 'selesai', datetime(2025, 1, 6), datetime(2025, 3, 31)
+            elif hname == 'RSUD Dr. Soetomo':
+                status, sdate, edate = 'selesai', datetime(2025, 7, 1), datetime(2025, 9, 30)
+            elif hname == 'RSPAL Dr. Ramelan':
+                status, sdate, edate = 'aktif', datetime(2026, 1, 6), datetime(2026, 3, 31)
+            elif hname == 'RSUD Haji Surabaya':
+                sdate, edate = datetime(2026, 7, 1), datetime(2026, 9, 30)
+
+        db.session.add(ExternalRotation(
+            user_id=user_id,
+            hospital_name=hname,
+            department=dept,
+            city=city,
+            supervisor=sup,
+            start_date=sdate,
+            end_date=edate,
+            status=status,
+        ))
+
+
 def seed():
     with app.app_context():
         # Reset schema
@@ -27,109 +150,7 @@ def seed():
         db.session.add(u)
         db.session.flush()  # get u.id
 
-        # ── Competency Logs ───────────────────────────────────────────────────
-        competencies = [
-            # (phase_category, competency_name, organ_system, status)
-            ('red', 'Imunologi Dasar', 'Dasar PA', 'completed'),
-            ('red', 'Biologi Molekuler & Genetika', 'Dasar PA', 'completed'),
-            ('red', 'Patologi Kepala & Leher', 'Kepala & Leher', 'in_progress'),
-            ('red', 'Patologi Paru', 'Paru', 'not_started'),
-            ('yellow', 'Teknik Sitologi & Potong Beku', 'Sitologi', 'not_started'),
-            ('yellow', 'Dasar Imunohistokimia (IHK)', 'IHK & Mol. Patologi', 'not_started'),
-            ('yellow', 'Patologi Molekuler Dasar', 'IHK & Mol. Patologi', 'not_started'),
-            ('yellow', 'Patologi Gastrointestinal', 'GIT', 'not_started'),
-            ('green', 'Patologi Payudara', 'Payudara', 'not_started'),
-            ('green', 'Patologi Ginjal & Urologi', 'Urologi', 'not_started'),
-            ('green', 'Patologi Sistem Saraf Pusat', 'Neuropatologi', 'not_started'),
-            ('green', 'Forensik Patologi', 'Forensik', 'not_started'),
-        ]
-        for phase, name, organ, status in competencies:
-            db.session.add(CompetencyLog(
-                user_id=u.id,
-                phase_category=phase,
-                competency_name=name,
-                organ_system=organ,
-                status=status,
-                completed_at=datetime.utcnow() if status == 'completed' else None,
-            ))
-
-        # ── Exams ─────────────────────────────────────────────────────────────
-        # Sesuai requirement: Ujian Lokal (organ) + Nasional Tahap 1 + Board/Tahap 2
-        exams = [
-            # (exam_name, exam_type, scheduled_date, result, score)
-            ('Ujian Organ Kepala & Leher', 'Lokal', datetime(2025, 3, 15), 'lulus', 82.5),
-            ('Ujian Organ Paru', 'Lokal', datetime(2025, 6, 20), 'lulus', 78.0),
-            ('Ujian Organ GIT', 'Lokal', datetime(2026, 9, 10), 'terjadwal', None),
-            ('Ujian Nasional Tahap 1', 'Nasional Tahap 1', datetime(2027, 3, 1), 'terjadwal', None),
-            ('Ujian Board / Sp.PA', 'Board/Tahap 2', datetime(2028, 6, 1), 'terjadwal', None),
-        ]
-        for name, etype, sdate, result, score in exams:
-            db.session.add(Exam(
-                user_id=u.id,
-                exam_name=name,
-                exam_type=etype,
-                scheduled_date=sdate,
-                result=result,
-                score=score,
-            ))
-
-        # ── Academic Tasks ────────────────────────────────────────────────────
-        # Sesuai requirement: Textbook/Journal Reading (per semester), Proposal, Publikasi Scopus
-        now = datetime.utcnow()
-        tasks = [
-            # (task_type, title, description, target_semester, deadline, is_completed)
-            ('Textbook Reading', 'Robbins & Cotran Pathologic Basis of Disease',
-             'Baca minimal 3 bab per bulan', 1, None, True),
-            ('Textbook Reading', 'Rosai and Ackerman\'s Surgical Pathology',
-             'Fokus pada bab organ yang sedang distase', 2, None, True),
-            ('Journal Reading', 'Modern Pathology — Breast Carcinoma Update',
-             'Presentasikan di journal reading department', 3, now + timedelta(days=30), False),
-            ('Journal Reading', 'American Journal of Surgical Pathology',
-             'Review jurnal terbaru IHK', 4, now + timedelta(days=60), False),
-            ('Penelitian', 'Proposal Karya Akhir (KA)',
-             'Penelitian tentang Imunohistokimia pada Kanker Payudara Triple Negative', 4,
-             now + timedelta(days=90), False),
-            ('Publikasi', 'Publikasi Jurnal Terindeks Scopus',
-             'Syarat kelulusan: minimal 1 artikel terindeks Scopus atau setara', 8, None, False),
-        ]
-        for ttype, title, desc, sem, dl, done in tasks:
-            db.session.add(AcademicTask(
-                user_id=u.id,
-                task_type=ttype,
-                title=title,
-                description=desc,
-                target_semester=sem,
-                deadline=dl,
-                is_completed=done,
-            ))
-
-        # ── External Rotations ────────────────────────────────────────────────
-        # Stase luar sesuai requirement
-        rotations = [
-            # (hospital_name, department, city, supervisor, start, end, status)
-            ('RS Universitas Airlangga (RSUA)', 'Departemen Patologi Anatomi', 'Surabaya',
-             'Prof. Dr. Soemarsono, Sp.PA(K)',
-             datetime(2025, 1, 6), datetime(2025, 3, 31), 'selesai'),
-            ('RSUD Dr. Soetomo', 'Patologi Anatomi', 'Surabaya',
-             'Dr. Ratna Kusuma, Sp.PA',
-             datetime(2025, 7, 1), datetime(2025, 9, 30), 'selesai'),
-            ('RSPAL Dr. Ramelan', 'Lab Patologi', 'Surabaya',
-             'Dr. Adi Purnomo, Sp.PA',
-             datetime(2026, 1, 6), datetime(2026, 3, 31), 'aktif'),
-            ('RSUD Haji Surabaya', 'Patologi Anatomi', 'Surabaya',
-             None, datetime(2026, 7, 1), datetime(2026, 9, 30), 'terjadwal'),
-        ]
-        for hname, dept, city, sup, sdate, edate, status in rotations:
-            db.session.add(ExternalRotation(
-                user_id=u.id,
-                hospital_name=hname,
-                department=dept,
-                city=city,
-                supervisor=sup,
-                start_date=sdate,
-                end_date=edate,
-                status=status,
-            ))
+        assign_standard_curriculum(u.id, is_seed=True)
 
         db.session.commit()
         print('✅ Database berhasil di-seed!')
