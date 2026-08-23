@@ -44,7 +44,8 @@ class Exam(db.Model):
     exam_name = db.Column(db.String(200), nullable=False)      # e.g. "Ujian Lokal Organ Kepala & Leher"
     exam_type = db.Column(db.String(100), nullable=False)      # Lokal, Nasional
     scheduled_date = db.Column(db.DateTime, nullable=True)
-    result = db.Column(db.String(32), default='terjadwal')     # terjadwal, lulus, tidak_lulus
+    result = db.Column(db.String(32), default='terjadwal')     # terjadwal, pending_verification, lulus, tidak_lulus
+    evidence_url = db.Column(db.String(500), nullable=True)
     score = db.Column(db.Float, nullable=True)
     notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -60,8 +61,11 @@ class AcademicTask(db.Model):
     target_semester = db.Column(db.Integer, nullable=True)
     deadline = db.Column(db.DateTime, nullable=True)
     is_completed = db.Column(db.Boolean, default=False)
+    status = db.Column(db.String(32), default='not_started') # not_started, pending_verification, completed
     document_proof_url = db.Column(db.String(500), nullable=True)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    link_url = db.Column(db.String(500), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class ExternalRotation(db.Model):

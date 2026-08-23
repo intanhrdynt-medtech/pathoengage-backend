@@ -198,6 +198,7 @@ def exam_dict(e):
         'exam_type': e.exam_type,
         'scheduled_date': e.scheduled_date.isoformat() if e.scheduled_date else None,
         'result': e.result,
+        'evidence_url': e.evidence_url,
         'score': e.score,
         'notes': e.notes,
     }
@@ -216,7 +217,7 @@ def update_exam(eid):
     if not exam:
         return jsonify({'error': 'Tidak ditemukan'}), 404
     data = request.get_json() or {}
-    for field in ['result', 'score', 'notes', 'scheduled_date']:
+    for field in ['result', 'score', 'notes', 'scheduled_date', 'evidence_url']:
         if field in data:
             setattr(exam, field, data[field])
     db.session.commit()
@@ -234,7 +235,10 @@ def task_dict(t):
         'target_semester': t.target_semester,
         'deadline': t.deadline.isoformat() if t.deadline else None,
         'is_completed': t.is_completed,
+        'status': t.status,
         'document_proof_url': t.document_proof_url,
+        'link_url': t.link_url,
+        'notes': t.notes,
     }
 
 
@@ -251,7 +255,7 @@ def update_academic_task(tid):
     if not task:
         return jsonify({'error': 'Tidak ditemukan'}), 404
     data = request.get_json() or {}
-    for field in ['is_completed', 'document_proof_url', 'description']:
+    for field in ['is_completed', 'status', 'document_proof_url', 'description', 'notes', 'link_url']:
         if field in data:
             setattr(task, field, data[field])
     db.session.commit()

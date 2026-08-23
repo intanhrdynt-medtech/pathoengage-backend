@@ -113,32 +113,34 @@ def assign_standard_curriculum(user_id, is_seed=False):
     now = datetime.utcnow()
     tasks = [
         # Semester 1
-        ('Textbook Reading', 'Textbook Reading 1', 'Wajib 1 Textbook Reading di Semester 1', 1),
-        ('Journal Reading', 'Journal Reading 1', 'Wajib 1 Journal Reading di Semester 1', 1),
-        ('Tugas Ilmiah', 'Case Report 1', 'Penyusunan laporan kasus', 1),
-        ('Tugas Ilmiah', 'Case Report 2', 'Penyusunan laporan kasus', 1),
-        ('Tugas Ilmiah', 'Tinjauan Pustaka / Referat', 'Penyusunan tinjauan pustaka', 1),
-        ('Penelitian', 'Telaah Retrospektif', 'Harus memiliki ethical clearance jika menggunakan data klinis', 1),
-        ('Journal Reading', 'Journal Reading Tambahan', 'Review jurnal ilmiah tambahan', 1),
+        ('Textbook Reading', 'Robbins Basic Pathology', 'Wajib 1 Textbook Reading di Semester 1', 1, 'https://elsevier.com/books/robbins-basic-pathology'),
+        ('Journal Reading', 'WHO Classification of Tumours', 'Wajib 1 Journal Reading di Semester 1', 1, 'https://publications.iarc.fr/'),
+        ('Tugas Ilmiah', 'Case Report 1', 'Penyusunan laporan kasus', 1, None),
+        ('Tugas Ilmiah', 'Case Report 2', 'Penyusunan laporan kasus', 1, None),
+        ('Tugas Ilmiah', 'Tinjauan Pustaka / Referat', 'Penyusunan tinjauan pustaka', 1, None),
+        ('Penelitian', 'Telaah Retrospektif', 'Harus memiliki ethical clearance jika menggunakan data klinis', 1, None),
+        ('Journal Reading', 'Journal of Pathology', 'Review jurnal ilmiah tambahan', 1, 'https://pathsocjournals.onlinelibrary.wiley.com/journal/10969896'),
 
         # Semester 4
-        ('Penelitian', 'Proposal Karya Akhir', 'Sering bergeser ke semester 5/6', 4),
-        ('Etik', 'Pengajuan Persetujuan Etik (Ethical Clearance)', 'Wajib diajukan setelah proposal disetujui, sebelum ambil data', 4),
+        ('Penelitian', 'Proposal Karya Akhir', 'Sering bergeser ke semester 5/6', 4, None),
+        ('Etik', 'Pengajuan Persetujuan Etik (Ethical Clearance)', 'Wajib diajukan setelah proposal disetujui, sebelum ambil data', 4, None),
 
         # Semester 7
-        ('Penelitian', 'Karya Akhir Selesai', 'Wajib disubmit ke jurnal terakreditasi', 7),
-        ('Publikasi', 'Dapatkan LOA Publikasi', 'Syarat mutlak mendaftar Ujian Nasional Tahap 2', 7),
+        ('Penelitian', 'Karya Akhir Selesai', 'Wajib disubmit ke jurnal terakreditasi', 7, None),
+        ('Publikasi', 'Dapatkan LOA Publikasi', 'Syarat mutlak mendaftar Ujian Nasional Tahap 2', 7, None),
 
         # Semester 8
-        ('Publikasi', 'Publikasi Jurnal Terindeks Scopus', 'Syarat Mutlak Kelulusan Universitas', 8),
-        ('Etik', 'Laporan Penutupan Etik (Tutup Etik)', 'Wajib dilakukan ke komite etik setelah naskah dipublikasikan', 8),
+        ('Publikasi', 'Publikasi Jurnal Terindeks Scopus', 'Syarat Mutlak Kelulusan Universitas', 8, None),
+        ('Etik', 'Laporan Penutupan Etik (Tutup Etik)', 'Wajib dilakukan ke komite etik setelah naskah dipublikasikan', 8, None),
     ]
-    for ttype, title, desc, sem in tasks:
-        done = False
+    for ttype, title, desc, sem, link in tasks:
+        status = 'not_started'
+        is_completed = False
         dl = None
         if is_seed:
             if sem == 1:
-                done = True
+                status = 'completed'
+                is_completed = True
             elif sem == 4:
                 dl = now + timedelta(days=60)
                 if 'Proposal' in title:
@@ -151,7 +153,9 @@ def assign_standard_curriculum(user_id, is_seed=False):
             description=desc,
             target_semester=sem,
             deadline=dl,
-            is_completed=done,
+            is_completed=is_completed,
+            status=status,
+            link_url=link
         ))
 
     # ── External Rotations ────────────────────────────────────────────────
